@@ -11,6 +11,10 @@
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
             background-color: #FDFBF8; /* Light warm beige */
             color: #383838; /* Dark gray for text */
+            /* Added subtle noise background for texture */
+            background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.05) 1px, transparent 0);
+            background-size: 4px 4px;
+            background-attachment: fixed; /* Ensures it stays fixed during scroll */
         }
         .accent-color {
             color: #B8860B; /* DarkGoldenRod - Primary Accent */
@@ -37,22 +41,44 @@
             margin-bottom: 2rem; /* mb-8 */
             text-align: center;
             color: #B8860B;
+            opacity: 0; /* Initial state for animation */
+            transform: translateY(20px); /* Initial state for animation */
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .section-title.animate-in {
+            opacity: 1;
+            transform: translateY(0);
         }
         .card {
             background-color: #FFFFFF;
             border-radius: 0.75rem; /* rounded-xl */
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-lg */
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); /* Deeper, more diffused shadow */
             padding: 1.5rem; /* p-6 */
             transition: transform 0.3s ease-in-out;
+            opacity: 0; /* Initial state for animation */
+            transform: translateY(30px) rotateX(-10deg); /* Initial state for animation */
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+            transform-origin: center bottom; /* For rotateX */
         }
         .card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-5px) scale(1.01) rotateX(0deg); /* Enhanced hover effect */
+        }
+        .card.animate-in {
+            opacity: 1;
+            transform: translateY(0) scale(1) rotateX(0deg);
         }
         .timeline-item {
             position: relative;
             padding-left: 2.5rem; /* pl-10 */
             padding-bottom: 2rem; /* pb-8 */
             border-left: 2px solid #D2B48C; /* secondary-accent-border */
+            opacity: 0; /* Initial state for animation */
+            transform: translateY(30px); /* Initial state for animation */
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .timeline-item.animate-in {
+            opacity: 1;
+            transform: translateY(0);
         }
         .timeline-dot {
             position: absolute;
@@ -63,6 +89,9 @@
             background-color: #B8860B; /* accent-bg */
             border-radius: 9999px; /* rounded-full */
             border: 2px solid #FDFBF8;
+            transform: scale(0); /* Initial state for animation */
+            animation: pop-in 0.4s ease-out forwards;
+            animation-delay: var(--delay); /* Use CSS variable for delay */
         }
         .details-toggle {
             cursor: pointer;
@@ -72,10 +101,15 @@
             margin-top: 0.5rem;
         }
         .details-content {
-            display: none;
+            max-height: 0; /* Initial state for smooth toggle */
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
             margin-top: 1rem;
             padding-left: 1rem;
             border-left: 2px solid #E5E7EB; /* Tailwind gray-200 */
+        }
+        .details-content.expanded {
+            max-height: 500px; /* Max height for content, adjust if needed */
         }
         /* Chart container styling as per requirements */
         .chart-container {
@@ -106,7 +140,60 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #B8860B;
         }
-        /* Removed .active-nav-link style */
+
+        /* Keyframe Animations */
+        @keyframes fade-in-up {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @keyframes pop-in {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            80% {
+                transform: scale(1.1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        @keyframes subtle-gradient-move {
+            0% { background-position: 0% 0%; }
+            50% { background-position: 100% 100%; }
+            100% { background-position: 0% 0%; }
+        }
+
+        /* Hero Section Animations */
+        .animate-hero-h1 {
+            animation: fade-in-up 0.8s ease-out forwards;
+            animation-delay: 0.2s;
+        }
+        .animate-hero-p1 {
+            animation: fade-in-up 0.8s ease-out forwards;
+            animation-delay: 0.4s;
+        }
+        .animate-hero-p2 {
+            animation: fade-in-up 0.8s ease-out forwards;
+            animation-delay: 0.6s;
+        }
+        .animate-hero-button {
+            animation: fade-in-up 0.8s ease-out forwards;
+            animation-delay: 0.8s;
+        }
+        #hero {
+            /* Updated gradient for a warmer, richer feel */
+            background-image: linear-gradient(to bottom right, #FFFBEB, #FCECDD);
+            background-size: 200% 200%; /* For gradient animation */
+            animation: subtle-gradient-move 20s ease infinite;
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -140,16 +227,16 @@
         </div>
     </nav>
 
-    <header id="hero" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#FDFBF8] to-[#F5F0E8] py-20">
+    <header id="hero" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#FFFBEB] to-[#FCECDD] py-20">
         <div class="text-center px-6">
-            <h1 class="text-6xl md:text-7xl font-extrabold mb-4">
+            <h1 class="text-6xl md:text-7xl font-extrabold mb-4 opacity-0 transform translate-y-20 animate-hero-h1">
                 <span class="accent-color">Ethan</span>
             </h1>
-            <p class="text-3xl md:text-4xl font-semibold text-gray-700 mb-8">产品总监</p>
-            <p class="max-w-3xl mx-auto text-lg text-gray-600">
+            <p class="text-3xl md:text-4xl font-semibold text-gray-700 mb-8 opacity-0 transform translate-y-20 animate-hero-p1">产品总监</p>
+            <p class="max-w-3xl mx-auto text-lg text-gray-600 opacity-0 transform translate-y-20 animate-hero-p2">
                 经验丰富的产品领导者，驱动创新，赋能增长，致力于打造卓越用户体验和商业价值。
             </p>
-            <a href="#summary" class="mt-10 inline-block accent-bg text-white font-semibold py-3 px-8 rounded-lg shadow-md hover:opacity-90 transition-opacity duration-300 text-lg">
+            <a href="#summary" class="mt-10 inline-block accent-bg text-white font-semibold py-3 px-8 rounded-lg shadow-md hover:opacity-90 transition-opacity duration-300 text-lg opacity-0 transform translate-y-20 animate-hero-button">
                 了解更多
             </a>
         </div>
@@ -161,7 +248,7 @@
             <h2 class="section-title">职业摘要</h2>
             <div class="max-w-3xl mx-auto text-center bg-white p-8 rounded-xl shadow-lg">
                 <p class="text-lg leading-relaxed text-gray-700">
-                    一位经验丰富的<strong>产品总监</strong>，拥有超过7年的产品管理与领导经验，<strong>擅长</strong>从0到1<strong>构建</strong>并<strong>规模化</strong>SaaS、游戏、金融科技及内容平台等多元化产品。<strong>精通</strong>产品战略规划、市场洞察、团队赋能与跨职能协作，<strong>成功驱动</strong>多款核心产品实现显著业务增长与市场领先地位。<strong>致力于</strong>通过创新产品解决方案，<strong>解决</strong>复杂业务挑战，<strong>赋能</strong>企业战略目标达成。
+                    一位经验丰富的<strong>产品总监</strong>，拥有超过8年的产品管理与领导经验，<strong>擅长</strong>从0到1<strong>构建</strong>并<strong>规模化</strong>SaaS、游戏、金融科技及内容平台等多元化产品。<strong>精通</strong>产品战略规划、市场洞察、团队赋能与跨职能协作，<strong>成功驱动</strong>多款核心产品实现显著业务增长与市场领先地位。<strong>致力于</strong>通过创新产品解决方案，<strong>解决</strong>复杂业务挑战，<strong>赋能</strong>企业战略目标达成。
                 </p>
             </div>
         </section>
@@ -195,11 +282,7 @@
                         <h3 class="text-xl font-semibold mb-3 accent-color">技术理解与应用</h3>
                         <p class="text-gray-600">具备CSS, HTML开发经验, Photoshop图像处理和JavaScript编程操作, 有效桥接业务与技术团队, 指导技术选型与架构决策。</p>
                     </div>
-                     <div class="card lg:col-span-3">
-                        <h3 class="text-xl font-semibold mb-3 accent-color">工具精通</h3>
-                        <p class="text-gray-600">精通Axure原型设计与Jira项目管理，熟练运用Xmind思维导图。</p>
                     </div>
-                </div>
             </div>
         </section>
 
@@ -209,28 +292,28 @@
                 <p class="text-center text-gray-600 mb-12 text-lg">在我的职业生涯中，我有幸在多家优秀企业担任关键产品角色，领导并参与了众多富有挑战性的项目，积累了丰富的实战经验。</p>
                 <div class="space-y-8">
                     <div class="timeline-item card">
-                        <div class="timeline-dot"></div>
+                        <div class="timeline-dot" style="--delay: 0s;"></div>
                         <h3 class="text-xl font-semibold mb-1 accent-color">某集团 | 产品主管</h3>
                         <p class="text-sm text-gray-500 mb-2">2022 年 2 月 - 2025 年 1 月 (2年 11个月)</p>
                         <ul class="list-disc list-inside text-gray-700 space-y-1">
-                            <li>战略性主导并成功发布SAAS包网、色站、微投等3款核心产品从0到1的战略规划与落地实施，实现市场空白填充与业务快速增长（例如，实现营收X%的增长）。</li>
+                            <li>战略性主导并成功发布SAAS包网、色站、微投等3款核心产品从0到1的战略规划与落地实施，实现市场空白填充与业务快速增长。</li>
                             <li>深度挖掘跨部门业务需求，系统化梳理并撰写详尽的产品设计文档，确保开发团队高效精准执行，加速产品上市周期。</li>
                         </ul>
                         <span class="details-toggle" onclick="toggleDetails(this)">显示更多</span>
                         <div class="details-content">
                             <ul class="list-disc list-inside text-gray-700 space-y-1">
-                                <li>统筹管理项目团队日常工作，优化内部资源配置，保障多个复杂项目按时高质量交付，提升项目成功率（例如，提升Y%）。</li>
+                                <li>统筹管理项目团队日常工作，优化内部资源配置，保障多个复杂项目按时高质量交付，提升项目成功率。</li>
                                 <li>紧密协作高层领导，确保产品战略与公司整体业务目标高度一致，为公司带来可持续竞争优势。</li>
                             </ul>
                         </div>
                     </div>
                     <div class="timeline-item card">
-                        <div class="timeline-dot"></div>
+                        <div class="timeline-dot" style="--delay: 0.1s;"></div>
                         <h3 class="text-xl font-semibold mb-1 accent-color">Ly集团 | 产品主管 (远程)</h3>
                         <p class="text-sm text-gray-500 mb-2">2023 年 2 月 - 2024 年 8 月 (1年 7个月)</p>
                         <ul class="list-disc list-inside text-gray-700 space-y-1">
-                            <li>持续迭代商户端功能，显著提升商户运营效率（例如，提升X%），优化用户体验，增强平台粘性。</li>
-                             <li>负责总控端产品的功能升级和流程优化，有效提升系统整体效能与管理效率（例如，降低运营成本Z%）。</li>
+                            <li>持续迭代商户端功能，显著提升商户运营效率，优化用户体验，增强平台粘性。</li>
+                             <li>负责总控端产品的功能升级和流程优化，有效提升系统整体效能与管理效率。</li>
                         </ul>
                         <span class="details-toggle" onclick="toggleDetails(this)">显示更多</span>
                         <div class="details-content">
@@ -241,7 +324,7 @@
                         </div>
                     </div>
                      <div class="timeline-item card">
-                        <div class="timeline-dot"></div>
+                        <div class="timeline-dot" style="--delay: 0.2s;"></div>
                         <h3 class="text-xl font-semibold mb-1 accent-color">Yb集团 | 产品专家</h3>
                         <p class="text-sm text-gray-500 mb-2">2020 年 11 月 - 2022 年 10 月 (1年 11个月) | 柬埔寨</p>
                         <ul class="list-disc list-inside text-gray-700 space-y-1">
@@ -251,7 +334,7 @@
                         </ul>
                     </div>
                     <div class="timeline-item card">
-                        <div class="timeline-dot"></div>
+                        <div class="timeline-dot" style="--delay: 0.3s;"></div>
                         <h3 class="text-xl font-semibold mb-1 accent-color">金星集团 | 产品专家</h3>
                         <p class="text-sm text-gray-500 mb-2">2020 年 7 月 - 2020 年 11 月 (4个月) | 柬埔寨</p>
                          <ul class="list-disc list-inside text-gray-700 space-y-1">
@@ -261,17 +344,17 @@
                         </ul>
                     </div>
                     <div class="timeline-item card">
-                        <div class="timeline-dot"></div>
+                        <div class="timeline-dot" style="--delay: 0.4s;"></div>
                         <h3 class="text-xl font-semibold mb-1 accent-color">皇家集团 | 产品主管</h3>
                         <p class="text-sm text-gray-500 mb-2">2018 年 12 月 - 2020 年 3 月 (1年 3个月) | 菲律宾</p>
                         <ul class="list-disc list-inside text-gray-700 space-y-1">
-                            <li>驱动产品需求规划与实施，利用数据分析、用户访谈和市场调研持续优化产品功能与用户体验，提升用户满意度（例如，提升NPS X点）。</li>
+                            <li>驱动产品需求规划与实施，利用数据分析、用户访谈和市场调研持续优化产品功能与用户体验，提升用户满意度。</li>
                             <li>负责彩票包网项目的产品迭代与功能拓展，扩大市场份额。</li>
                             <li>构建新人培训与辅导体系，提升团队成员专业能力与项目质量，为团队输送核心人才。</li>
                         </ul>
                     </div>
                      <div class="timeline-item card">
-                        <div class="timeline-dot"></div>
+                        <div class="timeline-dot" style="--delay: 0.5s;"></div>
                         <h3 class="text-xl font-semibold mb-1 accent-color">乐盈集团 | 产品主管</h3>
                         <p class="text-sm text-gray-500 mb-2">2018 年 6 月 - 2018 年 12 月 (6个月) | 菲律宾</p>
                         <ul class="list-disc list-inside text-gray-700 space-y-1">
@@ -281,7 +364,7 @@
                         </ul>
                     </div>
                      <div class="timeline-item card">
-                        <div class="timeline-dot"></div>
+                        <div class="timeline-dot" style="--delay: 0.6s;"></div>
                         <h3 class="text-xl font-semibold mb-1 accent-color">深圳某公司 | 产品专员</h3>
                         <p class="text-sm text-gray-500 mb-2">2017 年 5 月 - 2018 年 5 月 (1年) | 深圳</p>
                         <ul class="list-disc list-inside text-gray-700 space-y-1">
@@ -334,12 +417,12 @@
         <section id="education">
             <h2 class="section-title">教育背景</h2>
             <div class="max-w-xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="card text-center">
+                <div class="card">
                     <h3 class="text-xl font-semibold mb-2 accent-color">本科 | 工商管理</h3>
                     <p class="text-gray-700">厦门大学</p>
                     <p class="text-sm text-gray-500">2020 年 9 月 - 2023 年 6 月</p>
                 </div>
-                <div class="card text-center">
+                <div class="card">
                     <h3 class="text-xl font-semibold mb-2 accent-color">大专 | 工商企业管理</h3>
                     <p class="text-gray-700">江西旅游商贸学院</p>
                     <p class="text-sm text-gray-500">2015 年 3 月 - 2017 年 6 月</p>
@@ -351,7 +434,7 @@
     <footer class="bg-gray-100 border-t border-gray-200 mt-20">
         <div class="container mx-auto px-6 py-8 text-center text-gray-600">
             <p>&copy; <span id="currentYear"></span> Ethan. 保留所有权利。</p>
-        </div>
+            </div>
     </footer>
 
     <script>
@@ -387,11 +470,13 @@
         function toggleDetails(element) {
             const detailsContent = element.nextElementSibling;
             if (detailsContent && detailsContent.classList.contains('details-content')) {
-                if (detailsContent.style.display === 'block') {
-                    detailsContent.style.display = 'none';
+                if (detailsContent.classList.contains('expanded')) {
+                    detailsContent.classList.remove('expanded');
+                    detailsContent.style.maxHeight = '0';
                     element.textContent = '显示更多';
                 } else {
-                    detailsContent.style.display = 'block';
+                    detailsContent.classList.add('expanded');
+                    detailsContent.style.maxHeight = detailsContent.scrollHeight + 'px'; // Set max-height to actual scrollHeight
                     element.textContent = '收起详情';
                 }
             }
@@ -400,62 +485,61 @@
         // Set current year in footer
         document.getElementById('currentYear').textContent = new Date().getFullYear();
 
-        // Removed highlightNavLink function and its event listeners
+        // Intersection Observer for scroll animations
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.2 // Trigger when 20% of the element is visible
+        };
 
-        // Example of how Chart.js could be used if data was available
-        // This is just a placeholder to show Chart.js is loaded and can be used.
-        // No actual chart will be rendered due to lack of quantifiable data.
-        /*
-        const ctxPlaceholder = document.createElement('canvas'); // Create a dummy canvas
-        if (typeof Chart !== 'undefined' && ctxPlaceholder.getContext) {
-            try {
-                new Chart(ctxPlaceholder.getContext('2d'), {
-                    type: 'bar',
-                    data: {
-                        labels: ['A', 'B', 'C'],
-                        datasets: [{
-                            label: '示例数据',
-                            data: [10, 20, 30],
-                            backgroundColor: 'rgba(184, 134, 11, 0.2)', // accent-color with alpha
-                            borderColor: 'rgba(184, 134, 11, 1)', // accent-color
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            }
-                        },
-                        plugins: {
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        let label = context.dataset.label || '';
-                                        if (label) {
-                                            label += ': ';
-                                        }
-                                        if (context.parsed.y !== null) {
-                                            label += context.parsed.y;
-                                        }
-                                        return label;
-                                    }
-                                }
-                            }
-                        }
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    // For section titles
+                    if (entry.target.classList.contains('section-title')) {
+                        entry.target.classList.add('animate-in');
                     }
-                });
-                console.log("Chart.js initialized with placeholder (not rendered).");
-            } catch (e) {
-                console.error("Error initializing placeholder chart:", e);
-            }
-        } else {
-            console.log("Chart.js or canvas context not available for placeholder.");
-        }
-        */
+                    // For cards
+                    if (entry.target.classList.contains('card')) {
+                        entry.target.classList.add('animate-in');
+                    }
+                    // For timeline items
+                    if (entry.target.classList.contains('timeline-item')) {
+                        entry.target.classList.add('animate-in');
+                    }
+                    // For timeline dots (already animated by CSS, but ensure visibility)
+                    if (entry.target.classList.contains('timeline-dot')) {
+                        // No specific JS class needed, CSS animation handles it
+                    }
+                    observer.unobserve(entry.target); // Stop observing once animated
+                }
+            });
+        }, observerOptions);
 
+        // Observe section titles
+        document.querySelectorAll('.section-title').forEach(title => {
+            observer.observe(title);
+        });
+
+        // Observe cards (including those inside timeline-item)
+        document.querySelectorAll('section:not(#experience) .card, #experience .timeline-item .card').forEach(card => {
+            observer.observe(card);
+        });
+
+        // Observe timeline items directly for their animation
+        document.querySelectorAll('.timeline-item').forEach(item => {
+            observer.observe(item);
+        });
+
+        // Set animation delays for timeline dots
+        document.querySelectorAll('.timeline-dot').forEach((dot, index) => {
+            dot.style.setProperty('--delay', `${index * 0.1}s`);
+        });
+
+        // Add staggered animation delay for cards in skills, projects, and education sections
+        document.querySelectorAll('#skills .card, #projects .card, #education .card').forEach((card, index) => {
+            card.style.transitionDelay = `${index * 0.1}s`;
+        });
     </script>
 </body>
 </html>
