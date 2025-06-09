@@ -10,9 +10,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <!-- Chosen Palette: Warm Neutrals & Muted Blue -->
-    <!-- Application Structure Plan: The application is designed as an interactive project dashboard, not a linear document. The structure includes: 1. A high-level summary dashboard with key metrics (team, stores, products) for an instant overview. 2. A tabbed navigation system ('总览与时间线', '团队职责', '挑战与对策', '关键指标') to logically segment information and prevent cognitive overload. 3. The main view features an interactive Gantt-style chart visualizing the project timeline, allowing users to click on phases. 4. A dynamic task display area that updates based on user selections (either a phase from the chart or a role from the '团队职责' tab). This task-oriented, interactive structure was chosen because it transforms a static plan into a functional tool for the team, enabling members to quickly understand project flow and their specific responsibilities, which is more usable than reading through a long document. -->
+    <!-- Application Structure Plan: The application is designed as an interactive project dashboard, not a linear document. The structure includes: 1. A high-level summary dashboard with key metrics (team, stores, products) for an instant overview. 2. A tabbed navigation system ('总览与时间线', '团队职责', '挑战与对策', '关键指标') to logically segment information and prevent cognitive overload. 3. The main view features an interactive Gantt-style chart visualizing the project timeline, allowing users to click on finer-grained milestones. 4. A dynamic task display area that updates based on user selections (either a milestone from the chart or a role from the '团队职责' tab). This task-oriented, interactive structure was chosen because it transforms a static plan into a functional tool for the team, enabling members to quickly understand project flow and their specific responsibilities, which is more usable than reading through a long document. The addition of granular milestones directly on the Gantt chart enhances the "roadmap" aspect the user requested. -->
     <!-- Visualization & Content Choices: 
-        - Report Info: Project phases and durations. -> Goal: Show project flow over time. -> Viz: Horizontal Bar Chart (Gantt-style) via Chart.js. -> Interaction: Click on a phase bar to filter and display its associated tasks. -> Justification: A Gantt chart is the most intuitive visualization for project timelines. Interaction provides drill-down capability. Library: Chart.js (Canvas).
+        - Report Info: Project phases and durations. -> Goal: Show project flow over time with clear milestones. -> Viz: Horizontal Bar Chart (Gantt-style) via Chart.js, now displaying more granular milestones. -> Interaction: Click on a milestone bar to filter and display its associated tasks. -> Justification: A Gantt chart is the most intuitive visualization for project timelines. Granular milestones provide a clearer roadmap. Interaction provides drill-down capability. Library: Chart.js (Canvas).
         - Report Info: Team member roles and responsibilities. -> Goal: Clarify who does what. -> Viz: Styled cards (HTML/Tailwind) for each role. -> Interaction: Click on a role card to filter tasks for that person. -> Justification: Cards provide clear visual separation. Filtering creates a personalized to-do list.
         - Report Info: Specific tasks for each phase/role. -> Goal: Detail action items. -> Viz: A dynamically updated HTML list. -> Interaction: Content is populated based on clicks from the Gantt chart or role cards. -> Justification: A simple list is the clearest way to show tasks; dynamic updates make the app interactive and useful.
         - Report Info: Challenges, Solutions, KPIs. -> Goal: Provide quick-reference information. -> Viz: Content within tabs, using structured HTML. -> Interaction: Accessed via main tab navigation. -> Justification: Tabs organize secondary information without cluttering the main dashboard view.
@@ -45,12 +45,12 @@
             max-width: 900px;
             margin-left: auto;
             margin-right: auto;
-            height: 280px;
-            max-height: 40vh;
+            height: 400px; /* Increased height for more detailed gantt */
+            max-height: 60vh;
         }
         @media (min-width: 768px) {
             .chart-container {
-                height: 350px;
+                height: 500px;
             }
         }
         .role-card {
@@ -103,8 +103,8 @@
         <main id="tab-content">
             <div id="timeline-content">
                 <div class="content-card p-4 sm:p-6">
-                     <h2 class="text-xl font-semibold mb-1">项目阶段时间线</h2>
-                     <p class="text-gray-600 mb-4">点击下方的阶段条形图，可以查看该阶段的具体任务列表。</p>
+                     <h2 class="text-xl font-semibold mb-1">项目阶段与里程碑</h2>
+                     <p class="text-gray-600 mb-4">下方的甘特图展示了详细的规划路线及里程碑。点击图中的每个里程碑条形图，可以查看该里程碑的具体任务列表。</p>
                     <div class="chart-container">
                         <canvas id="ganttChart"></canvas>
                     </div>
@@ -179,7 +179,7 @@
         
         <section id="task-details-section" class="mt-8">
              <div class="content-card p-4 sm:p-6">
-                <h2 id="task-title" class="text-xl font-semibold mb-4">任务详情: 阶段一：准备与规划</h2>
+                <h2 id="task-title" class="text-xl font-semibold mb-4">任务详情: 阶段一：准备与规划 - P1-1: 启动会议与宣讲</h2>
                 <div id="task-list" class="space-y-4">
                     <!-- Tasks will be dynamically inserted here -->
                 </div>
@@ -195,41 +195,83 @@
                 { id: 'ops', name: '运营专员', icon: '⚙️' }
             ],
             phases: [
-                { id: 'phase1', name: '阶段一：准备与规划', duration: 5, color: 'rgba(59, 130, 246, 0.7)' },
-                { id: 'phase2', name: '阶段二：商品信息录入与图片设计', duration: 30, color: 'rgba(16, 185, 129, 0.7)' },
-                { id: 'phase3', name: '阶段三：测试与优化', duration: 5, color: 'rgba(249, 115, 22, 0.7)' },
-                { id: 'phase4', name: '阶段四：日常运营与迭代', duration: 0, color: 'rgba(139, 92, 246, 0.7)' }
+                { id: 'p1m1', name: 'P1-1: 启动会议与宣讲', duration: 1, color: 'rgba(59, 130, 246, 0.7)' },
+                { id: 'p1m2', name: 'P1-2: 平台与资质确认', duration: 1, color: 'rgba(59, 130, 246, 0.7)' },
+                { id: 'p1m3', name: 'P1-3: 数据收集与模板', duration: 2, color: 'rgba(59, 130, 246, 0.7)' },
+                { id: 'p1m4', name: 'P1-4: 竞品与视觉制定', duration: 2, color: 'rgba(59, 130, 246, 0.7)' },
+                { id: 'p1m5', name: 'P1-5: 设计与计划细化', duration: 2, color: 'rgba(59, 130, 246, 0.7)' },
+
+                { id: 'p2m1', name: 'P2-1: 家电上架准备', duration: 5, color: 'rgba(16, 185, 129, 0.7)' },
+                { id: 'p2m2', name: 'P2-2: 服装上架准备', duration: 5, color: 'rgba(16, 185, 129, 0.7)' },
+                { id: 'p2m3', name: 'P2-3: 儿童用品准备', duration: 5, color: 'rgba(16, 185, 129, 0.7)' },
+                { id: 'p2m4', name: 'P2-4: 宠物用品准备', duration: 5, color: 'rgba(16, 185, 129, 0.7)' },
+                { id: 'p2m5', name: 'P2-5: 商品批量上架', duration: 5, color: 'rgba(16, 185, 129, 0.7)' },
+                { id: 'p2m6', name: 'P2-6: 详情页与优化', duration: 5, color: 'rgba(16, 185, 129, 0.7)' },
+
+                { id: 'p3m1', name: 'P3-1: 内部自检与测试', duration: 2, color: 'rgba(249, 115, 22, 0.7)' },
+                { id: 'p3m2', name: 'P3-2: 客服物流测试', duration: 1, color: 'rgba(249, 115, 22, 0.7)' },
+                { id: 'p3m3', name: 'P3-3: 基础SEO与营销', duration: 1, color: 'rgba(249, 115, 22, 0.7)' },
+                { id: 'p3m4', name: 'P3-4: CEO审批与上线', duration: 1, color: 'rgba(249, 115, 22, 0.7)' },
+
+                { id: 'p4m1', name: 'P4-1: 日常运营与迭代', duration: 0, color: 'rgba(139, 92, 246, 0.7)' }
             ],
             tasks: [
-                { phaseId: 'phase1', roleId: 'ceo', text: '明确各店铺上线顺序和优先级。' },
-                { phaseId: 'phase1', roleId: 'ceo', text: '与团队沟通，制定详细项目计划和时间表。' },
-                { phaseId: 'phase1', roleId: 'ceo', text: '确认各电商平台账号注册和开店资质。' },
-                { phaseId: 'phase1', roleId: 'ops', text: '熟悉各电商平台规则、上架流程、后台操作。' },
-                { phaseId: 'phase1', roleId: 'ops', text: '收集整理1200个商品的原始数据。' },
-                { phaseId: 'phase1', roleId: 'ops', text: '建立商品信息批量导入模板。' },
-                { phaseId: 'phase1', roleId: 'ops', text: '对各品类进行竞品调研。' },
-                { phaseId: 'phase1', roleId: 'designer', text: '制定店铺视觉风格规范、图片尺寸要求等。' },
-                { phaseId: 'phase1', roleId: 'designer', text: '准备不同类型商品的详情页和主图设计模板。' },
+                { phaseId: 'p1m1', roleId: 'ceo', text: '召开启动会议，明确目标、规划路线、团队职责。' },
+                { phaseId: 'p1m1', roleId: 'ops', text: '参加启动会议，了解项目规划。' },
+                { phaseId: 'p1m1', roleId: 'designer', text: '参加启动会议，了解项目规划。' },
                 
-                { phaseId: 'phase2', roleId: 'designer', text: '设计制作1200个商品的全部主图和详情页图片。' },
-                { phaseId: 'phase2', roleId: 'designer', text: '根据运营反馈，快速调整图片。' },
-                { phaseId: 'phase2', roleId: 'ops', text: '录入1200个商品的标题、卖点、参数、价格等信息。' },
-                { phaseId: 'phase2', roleId: 'ops', text: '设置4000+ SKU的规格、库存、编码。' },
-                { phaseId: 'phase2', roleId: 'ops', text: '对商品进行精准分类和打标签。' },
-                { phaseId: 'phase2', roleId: 'ops', text: '按批次在各平台上架商品。' },
+                { phaseId: 'p1m2', roleId: 'ceo', text: '确认各电商平台开店资质和账号（高层协调）。' },
+                { phaseId: 'p1m2', roleId: 'ops', text: '核实各电商平台开店资质要求，完成账号注册。' },
+                
+                { phaseId: 'p1m3', roleId: 'ops', text: '收集1200个商品的原始数据 (型号、规格、功能、供货价等)。' },
+                { phaseId: 'p1m3', roleId: 'ops', text: '根据平台要求建立商品信息批量导入模板。' },
+                
+                { phaseId: 'p1m4', roleId: 'ops', text: '对各品类进行初步竞品调研，了解市场趋势。' },
+                { phaseId: 'p1m4', roleId: 'designer', text: '制定店铺整体视觉风格、图片尺寸规范、水印和LOGO标准。' },
+                
+                { phaseId: 'p1m5', roleId: 'designer', text: '准备不同类型商品的主图和详情页设计模板。' },
+                { phaseId: 'p1m5', roleId: 'ceo', text: '与运营和设计师沟通，细化商品上架计划和优先级。' },
+                { phaseId: 'p1m5', roleId: 'ops', text: '协助CEO细化商品上架计划和优先级。' },
 
-                { phaseId: 'phase3', roleId: 'ceo', text: '审批并授权商品正式上线。' },
-                { phaseId: 'phase3', roleId: 'ops', text: '全面自检所有上架商品的标题、价格、库存、图片等。' },
-                { phaseId: 'phase3', roleId: 'ops', text: '模拟买家进行下单、支付、退款等全链路测试。' },
-                { phaseId: 'phase3', roleId: 'ops', text: '对商品标题、关键词进行基础SEO优化。' },
-                { phaseId: 'phase3', roleId: 'designer', text: '根据测试反馈，最终优化调整图片。' },
+                { phaseId: 'p2m1', roleId: 'designer', text: '设计制作家电品类（约300商品）主图和详情页图片初稿。' },
+                { phaseId: 'p2m1', roleId: 'ops', text: '录入家电品类商品信息和SKU设置（约1000SKU）。' },
+                
+                { phaseId: 'p2m2', roleId: 'designer', text: '设计制作服装品类（约300商品）主图和详情页图片初稿。' },
+                { phaseId: 'p2m2', roleId: 'ops', text: '录入服装品类商品信息和SKU设置（约1000SKU）。' },
+                
+                { phaseId: 'p2m3', roleId: 'designer', text: '设计制作儿童用品品类（约300商品）主图和详情页图片初稿。' },
+                { phaseId: 'p2m3', roleId: 'ops', text: '录入儿童用品品类商品信息和SKU设置（约1000SKU）。' },
+                
+                { phaseId: 'p2m4', roleId: 'designer', text: '设计制作宠物用品品类（约300商品）主图和详情页图片初稿。' },
+                { phaseId: 'p2m4', roleId: 'ops', text: '录入宠物用品品类商品信息和SKU设置（约1000SKU）。' },
+                
+                { phaseId: 'p2m5', roleId: 'ops', text: '利用批量工具将已完成信息和图片的商品上传至各平台。' },
+                { phaseId: 'p2m5', roleId: 'ops', text: '进行初步的商品上架准确性审核。' },
+                
+                { phaseId: 'p2m6', roleId: 'ops', text: '根据上架情况完善商品详情页，优化商品描述和卖点。' },
+                { phaseId: 'p2m6', roleId: 'designer', text: '根据运营反馈和上架效果，快速调整和优化图片。' },
+                { phaseId: 'p2m6', roleId: 'ops', text: '处理初期上架过程中发现的商品信息或图片问题。' },
 
-                { phaseId: 'phase4', roleId: 'ops', text: '每日处理订单，跟踪物流状态。' },
-                { phaseId: 'phase4', roleId: 'ops', text: '及时响应客户咨询，处理售后问题。' },
-                { phaseId: 'phase4', roleId: 'ops', text: '定期盘点库存，与供应链对接。' },
-                { phaseId: 'phase4', roleId: 'ops', text: '定期分析销售数据，形成报告。' },
-                { phaseId: 'phase4', roleId: 'ceo', text: '根据数据报告进行战略调整。' },
-                { phaseId: 'phase4', roleId: 'designer', text: '根据营销活动需求，制作海报、专题页等。' },
+                { phaseId: 'p3m1', roleId: 'ops', text: '全面自检所有已上架商品的标题、价格、库存、图片等是否准确完整。' },
+                { phaseId: 'p3m1', roleId: 'ops', text: '模拟买家进行下单、支付、退款、评价等全链路流程测试。' },
+                
+                { phaseId: 'p3m2', roleId: 'ops', text: '测试客服响应机制和效率，确保客服流程顺畅。' },
+                { phaseId: 'p3m2', roleId: 'ops', text: '确认物流发货流程和系统对接，确保订单能及时发出。' },
+                
+                { phaseId: 'p3m3', roleId: 'ops', text: '对关键商品标题和关键词进行基础SEO优化，提升搜索排名。' },
+                { phaseId: 'p3m3', roleId: 'designer', text: '制作首批营销活动（如开业促销、新品推广）所需的海报、专题页等素材。' },
+                
+                { phaseId: 'p3m4', roleId: 'ceo', text: 'CEO对所有测试结果进行最终审核，批准店铺正式上线运营。' },
+                { phaseId: 'p3m4', roleId: 'designer', text: '根据最终测试反馈，进行最后的图片和视觉调整。' },
+
+                { phaseId: 'p4m1', roleId: 'ops', text: '每日处理新订单，核对发货信息，跟踪物流状态。' },
+                { phaseId: 'p4m1', roleId: 'ops', text: '及时响应客户咨询，处理售前、售中、售后问题。' },
+                { phaseId: 'p4m1', roleId: 'ops', text: '定期盘点库存，与供应链对接，避免缺货或积压。' },
+                { phaseId: 'p4m1', roleId: 'ops', text: '定期分析销售数据、流量数据、转化率，形成报告。' },
+                { phaseId: 'p4m1', roleId: 'ceo', text: '根据销售数据和市场反馈，调整运营战略和营销方向。' },
+                { phaseId: 'p4m1', roleId: 'designer', text: '根据营销活动需求和运营策略，持续制作和优化设计素材。' },
+                { phaseId: 'p4m1', roleId: 'ceo', text: '持续争取外部资源，例如供应链合作、市场推广渠道等。' },
+                { phaseId: 'p4m1', roleId: 'ceo', text: '监控运营风险，制定应急预案。' },
             ]
         };
 
@@ -241,6 +283,10 @@
 
         function getRoleById(roleId) {
             return projectData.roles.find(r => r.id === roleId);
+        }
+
+        function getPhaseById(phaseId) {
+            return projectData.phases.find(p => p.id === phaseId);
         }
 
         function renderTasks(tasksToRender, title) {
@@ -276,7 +322,7 @@
         function renderTasksByPhase(phaseId) {
             selectedRoleId = null;
             updateRoleCardSelection();
-            const phase = projectData.phases.find(p => p.id === phaseId);
+            const phase = getPhaseById(phaseId);
             const tasks = projectData.tasks.filter(t => t.phaseId === phaseId);
             renderTasks(tasks, `任务详情: ${phase.name}`);
         }
@@ -290,18 +336,23 @@
         }
 
         function createGanttChart() {
+            const phasesForChart = projectData.phases.filter(p => p.duration > 0); // Exclude ongoing phase from chart
             const ctx = document.getElementById('ganttChart').getContext('2d');
             const data = {
-                labels: projectData.phases.filter(p => p.duration > 0).map(p => p.name),
+                labels: phasesForChart.map(p => p.name),
                 datasets: [{
                     label: '预估工作日',
-                    data: projectData.phases.filter(p => p.duration > 0).map(p => p.duration),
-                    backgroundColor: projectData.phases.filter(p => p.duration > 0).map(p => p.color),
-                    borderColor: projectData.phases.filter(p => p.duration > 0).map(p => p.color.replace('0.7', '1')),
+                    data: phasesForChart.map(p => p.duration),
+                    backgroundColor: phasesForChart.map(p => p.color),
+                    borderColor: phasesForChart.map(p => p.color.replace('0.7', '1')),
                     borderWidth: 1,
-                    barPercentage: 0.6,
+                    barPercentage: 0.8,
                 }]
             };
+
+            if (ganttChart) {
+                ganttChart.destroy();
+            }
 
             ganttChart = new Chart(ctx, {
                 type: 'bar',
@@ -341,7 +392,8 @@
                             ticks: {
                                 callback: function(value, index, values) {
                                     const label = this.getLabelForValue(value);
-                                    return label.length > 16 ? label.substring(0, 16) + '...' : label;
+                                    // Wrap label if too long, or truncate for shorter chart.
+                                    return label.length > 20 ? label.substring(0, 20) + '...' : label;
                                 }
                             }
                         }
@@ -349,7 +401,7 @@
                     onClick: (event, elements) => {
                         if (elements.length > 0) {
                             const phaseIndex = elements[0].index;
-                            const phaseId = projectData.phases.filter(p => p.duration > 0)[phaseIndex].id;
+                            const phaseId = phasesForChart[phaseIndex].id;
                             renderTasksByPhase(phaseId);
                         }
                     }
@@ -359,6 +411,7 @@
         
         function renderRoleCards() {
             const container = document.getElementById('role-cards');
+            container.innerHTML = ''; // Clear existing cards
             projectData.roles.forEach(role => {
                 const card = document.createElement('div');
                 card.className = 'role-card content-card p-4 text-center hover:shadow-md';
@@ -413,16 +466,16 @@
                 }
                 
                 if(targetTab === 'timeline'){
-                    renderTasksByPhase('phase1');
+                    renderTasksByPhase('p1m1'); // Default to the first granular phase
                 } else if(targetTab === 'roles') {
-                     renderTasksByRole('ceo');
+                     renderTasksByRole('ceo'); // Default to CEO tasks
                 }
 
             });
 
             createGanttChart();
             renderRoleCards();
-            renderTasksByPhase('phase1');
+            renderTasksByPhase('p1m1'); // Initial load with the first milestone's tasks
         });
     </script>
 </body>
