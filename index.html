@@ -3,542 +3,426 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ethan - 产品总监简历</title>
+    <title>交互式电商项目规划仪表盘</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals & Muted Blue -->
+    <!-- Application Structure Plan: The application is designed as an interactive project dashboard, not a linear document. The structure includes: 1. A high-level summary dashboard with key metrics (team, stores, products) for an instant overview. 2. A tabbed navigation system ('总览与时间线', '团队职责', '挑战与对策', '关键指标') to logically segment information and prevent cognitive overload. 3. The main view features an interactive Gantt-style chart visualizing the project timeline, allowing users to click on phases. 4. A dynamic task display area that updates based on user selections (either a phase from the chart or a role from the '团队职责' tab). This task-oriented, interactive structure was chosen because it transforms a static plan into a functional tool for the team, enabling members to quickly understand project flow and their specific responsibilities, which is more usable than reading through a long document. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Project phases and durations. -> Goal: Show project flow over time. -> Viz: Horizontal Bar Chart (Gantt-style) via Chart.js. -> Interaction: Click on a phase bar to filter and display its associated tasks. -> Justification: A Gantt chart is the most intuitive visualization for project timelines. Interaction provides drill-down capability. Library: Chart.js (Canvas).
+        - Report Info: Team member roles and responsibilities. -> Goal: Clarify who does what. -> Viz: Styled cards (HTML/Tailwind) for each role. -> Interaction: Click on a role card to filter tasks for that person. -> Justification: Cards provide clear visual separation. Filtering creates a personalized to-do list.
+        - Report Info: Specific tasks for each phase/role. -> Goal: Detail action items. -> Viz: A dynamically updated HTML list. -> Interaction: Content is populated based on clicks from the Gantt chart or role cards. -> Justification: A simple list is the clearest way to show tasks; dynamic updates make the app interactive and useful.
+        - Report Info: Challenges, Solutions, KPIs. -> Goal: Provide quick-reference information. -> Viz: Content within tabs, using structured HTML. -> Interaction: Accessed via main tab navigation. -> Justification: Tabs organize secondary information without cluttering the main dashboard view.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-            background-color: #FDFBF8; /* Light warm beige */
-            color: #383838; /* Dark gray for text */
-            /* Added subtle noise background for texture */
-            background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.05) 1px, transparent 0);
-            background-size: 4px 4px;
-            background-attachment: fixed; /* Ensures it stays fixed during scroll */
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #FDFBF8; /* Warm off-white */
+            color: #4A4A4A; /* Dark Gray */
         }
-        .accent-color {
-            color: #B8860B; /* DarkGoldenRod - Primary Accent */
+        .tab-active {
+            border-bottom-color: #60A5FA; /* Muted Blue */
+            color: #3B82F6; /* Darker Muted Blue */
+            font-weight: 500;
         }
-        .accent-bg {
-            background-color: #B8860B;
+        .tab-inactive {
+            border-bottom-color: transparent;
+            color: #6B7280; /* Gray */
         }
-        .secondary-accent-color {
-            color: #D2B48C; /* Tan - Secondary Accent */
-        }
-        .secondary-accent-border {
-            border-color: #D2B48C;
-        }
-        .sticky-nav {
-            position: sticky;
-            top: 0;
-            z-index: 50;
-            background-color: rgba(253, 251, 248, 0.85); /* Semi-transparent body background */
-            backdrop-filter: blur(10px);
-        }
-        .section-title {
-            font-size: 2.25rem; /* text-4xl */
-            font-weight: 700; /* font-bold */
-            margin-bottom: 2rem; /* mb-8 */
-            text-align: center;
-            color: #B8860B;
-            opacity: 0; /* Initial state for animation */
-            transform: translateY(20px); /* Initial state for animation */
-            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-        }
-        .section-title.animate-in {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .card {
+        .content-card {
             background-color: #FFFFFF;
-            border-radius: 0.75rem; /* rounded-xl */
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); /* Deeper, more diffused shadow */
-            padding: 1.5rem; /* p-6 */
-            transition: transform 0.3s ease-in-out;
-            opacity: 0; /* Initial state for animation */
-            transform: translateY(30px) rotateX(-10deg); /* Initial state for animation */
-            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
-            transform-origin: center bottom; /* For rotateX */
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+            transition: all 0.3s ease-in-out;
         }
-        .card:hover {
-            transform: translateY(-5px) scale(1.01) rotateX(0deg); /* Enhanced hover effect */
-        }
-        .card.animate-in {
-            opacity: 1;
-            transform: translateY(0) scale(1) rotateX(0deg);
-        }
-        .timeline-item {
-            position: relative;
-            padding-left: 2.5rem; /* pl-10 */
-            padding-bottom: 2rem; /* pb-8 */
-            border-left: 2px solid #D2B48C; /* secondary-accent-border */
-            opacity: 0; /* Initial state for animation */
-            transform: translateY(30px); /* Initial state for animation */
-            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
-        }
-        .timeline-item.animate-in {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .timeline-dot {
-            position: absolute;
-            left: -0.5625rem; /* Adjust to center on the line */
-            top: 0.25rem;
-            height: 1rem; /* h-4 */
-            width: 1rem; /* w-4 */
-            background-color: #B8860B; /* accent-bg */
-            border-radius: 9999px; /* rounded-full */
-            border: 2px solid #FDFBF8;
-            transform: scale(0); /* Initial state for animation */
-            animation: pop-in 0.4s ease-out forwards;
-            animation-delay: var(--delay); /* Use CSS variable for delay */
-        }
-        .details-toggle {
-            cursor: pointer;
-            color: #B8860B;
-            font-weight: 600;
-            display: inline-block;
-            margin-top: 0.5rem;
-        }
-        .details-content {
-            max-height: 0; /* Initial state for smooth toggle */
-            overflow: hidden;
-            transition: max-height 0.5s ease-in-out;
-            margin-top: 1rem;
-            padding-left: 1rem;
-            border-left: 2px solid #E5E7EB; /* Tailwind gray-200 */
-        }
-        .details-content.expanded {
-            max-height: 500px; /* Max height for content, adjust if needed */
-        }
-        /* Chart container styling as per requirements */
         .chart-container {
             position: relative;
             width: 100%;
-            max-width: 600px; /* Example max-width */
+            max-width: 900px;
             margin-left: auto;
             margin-right: auto;
-            height: 300px; /* Base height */
-            max-height: 400px; /* Max height */
+            height: 280px;
+            max-height: 40vh;
         }
         @media (min-width: 768px) {
             .chart-container {
                 height: 350px;
             }
         }
-        /* Custom scrollbar for a cleaner look */
-        ::-webkit-scrollbar {
-            width: 8px;
+        .role-card {
+            cursor: pointer;
+            border: 1px solid #E5E7EB;
         }
-        ::-webkit-scrollbar-track {
-            background: #FDFBF8;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #D2B48C;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #B8860B;
-        }
-
-        /* Keyframe Animations */
-        @keyframes fade-in-up {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        @keyframes pop-in {
-            0% {
-                transform: scale(0);
-                opacity: 0;
-            }
-            80% {
-                transform: scale(1.1);
-                opacity: 1;
-            }
-            100% {
-                transform: scale(1);
-            }
-        }
-        @keyframes subtle-gradient-move {
-            0% { background-position: 0% 0%; }
-            50% { background-position: 100% 100%; }
-            100% { background-position: 0% 0%; }
-        }
-
-        /* Hero Section Animations */
-        .animate-hero-h1 {
-            animation: fade-in-up 0.8s ease-out forwards;
-            animation-delay: 0.2s;
-        }
-        .animate-hero-p1 {
-            animation: fade-in-up 0.8s ease-out forwards;
-            animation-delay: 0.4s;
-        }
-        .animate-hero-p2 {
-            animation: fade-in-up 0.8s ease-out forwards;
-            animation-delay: 0.6s;
-        }
-        .animate-hero-button {
-            animation: fade-in-up 0.8s ease-out forwards;
-            animation-delay: 0.8s;
-        }
-        #hero {
-            /* Updated gradient for a warmer, richer feel */
-            background-image: linear-gradient(to bottom right, #FFFBEB, #FCECDD);
-            background-size: 200% 200%; /* For gradient animation */
-            animation: subtle-gradient-move 20s ease infinite;
+        .role-card.selected {
+            border-color: #60A5FA;
+            box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.3);
         }
     </style>
 </head>
 <body class="antialiased">
 
-    <nav class="sticky-nav shadow-md">
-        <div class="container mx-auto px-6 py-3">
-            <div class="flex items-center justify-between">
-                <div>
-                    <a href="#hero" class="accent-color text-2xl font-bold">Ethan</a>
-                </div>
-                <div class="hidden md:flex space-x-4">
-                    <a href="#summary" class="hover:accent-color transition-colors duration-300">职业摘要</a>
-                    <a href="#skills" class="hover:accent-color transition-colors duration-300">核心技能</a>
-                    <a href="#experience" class="hover:accent-color transition-colors duration-300">职业经历</a>
-                    <a href="#projects" class="hover:accent-color transition-colors duration-300">关键项目</a>
-                    <a href="#education" class="hover:accent-color transition-colors duration-300">教育背景</a>
-                </div>
-                <div class="md:hidden">
-                    <button id="nav-toggle" class="text-gray-700 focus:outline-none">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
-                    </button>
-                </div>
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">电商团队运营与商品上架规划</h1>
+            <p class="mt-2 text-lg text-gray-500">一个将计划转化为行动的交互式仪表盘</p>
+        </header>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 text-center">
+            <div class="content-card p-4">
+                <p class="text-sm text-gray-500">团队规模</p>
+                <p class="text-2xl font-bold text-blue-500">4人</p>
             </div>
-            <div id="mobile-nav" class="hidden md:hidden mt-3 space-y-1">
-                <a href="#summary" class="block px-3 py-2 rounded-md text-base font-medium hover:accent-color hover:bg-gray-50 transition-colors duration-300">职业摘要</a>
-                <a href="#skills" class="block px-3 py-2 rounded-md text-base font-medium hover:accent-color hover:bg-gray-50 transition-colors duration-300">核心技能</a>
-                <a href="#experience" class="block px-3 py-2 rounded-md text-base font-medium hover:accent-color hover:bg-gray-50 transition-colors duration-300">职业经历</a>
-                <a href="#projects" class="block px-3 py-2 rounded-md text-base font-medium hover:accent-color hover:bg-gray-50 transition-colors duration-300">关键项目</a>
-                <a href="#education" class="block px-3 py-2 rounded-md text-base font-medium hover:accent-color hover:bg-gray-50 transition-colors duration-300">教育背景</a>
+            <div class="content-card p-4">
+                <p class="text-sm text-gray-500">店铺数量</p>
+                <p class="text-2xl font-bold text-blue-500">4个</p>
+            </div>
+            <div class="content-card p-4">
+                <p class="text-sm text-gray-500">商品总数 (SPU)</p>
+                <p class="text-2xl font-bold text-blue-500">1200个</p>
+            </div>
+            <div class="content-card p-4">
+                <p class="text-sm text-gray-500">规格总数 (SKU)</p>
+                <p class="text-2xl font-bold text-blue-500">4000+</p>
             </div>
         </div>
-    </nav>
 
-    <header id="hero" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#FFFBEB] to-[#FCECDD] py-20">
-        <div class="text-center px-6">
-            <h1 class="text-6xl md:text-7xl font-extrabold mb-4 opacity-0 transform translate-y-20 animate-hero-h1">
-                <span class="accent-color">Ethan</span>
-            </h1>
-            <p class="text-3xl md:text-4xl font-semibold text-gray-700 mb-8 opacity-0 transform translate-y-20 animate-hero-p1">产品总监</p>
-            <p class="max-w-3xl mx-auto text-lg text-gray-600 opacity-0 transform translate-y-20 animate-hero-p2">
-                经验丰富的产品领导者，驱动创新，赋能增长，致力于打造卓越用户体验和商业价值。
-            </p>
-            <a href="#summary" class="mt-10 inline-block accent-bg text-white font-semibold py-3 px-8 rounded-lg shadow-md hover:opacity-90 transition-opacity duration-300 text-lg opacity-0 transform translate-y-20 animate-hero-button">
-                了解更多
-            </a>
+        <div class="border-b border-gray-200 mb-6">
+            <nav class="flex -mb-px space-x-6" id="tabs">
+                <a href="#" data-tab="timeline" class="tab-active text-lg py-2 px-1 border-b-2">总览与时间线</a>
+                <a href="#" data-tab="roles" class="tab-inactive text-lg py-2 px-1 border-b-2">团队职责</a>
+                <a href="#" data-tab="challenges" class="tab-inactive text-lg py-2 px-1 border-b-2">挑战与对策</a>
+                <a href="#" data-tab="kpis" class="tab-inactive text-lg py-2 px-1 border-b-2">关键指标</a>
+            </nav>
         </div>
-    </header>
 
-    <main class="container mx-auto px-6 py-16 space-y-20">
-
-        <section id="summary">
-            <h2 class="section-title">职业摘要</h2>
-            <div class="max-w-3xl mx-auto text-center bg-white p-8 rounded-xl shadow-lg">
-                <p class="text-lg leading-relaxed text-gray-700">
-                    一位经验丰富的<strong>产品总监</strong>，拥有超过8年的产品管理与领导经验，<strong>擅长</strong>从0到1<strong>构建</strong>并<strong>规模化</strong>SaaS、游戏、金融科技及内容平台等多元化产品。<strong>精通</strong>产品战略规划、市场洞察、团队赋能与跨职能协作，<strong>成功驱动</strong>多款核心产品实现显著业务增长与市场领先地位。<strong>致力于</strong>通过创新产品解决方案，<strong>解决</strong>复杂业务挑战，<strong>赋能</strong>企业战略目标达成。
-                </p>
+        <main id="tab-content">
+            <div id="timeline-content">
+                <div class="content-card p-4 sm:p-6">
+                     <h2 class="text-xl font-semibold mb-1">项目阶段时间线</h2>
+                     <p class="text-gray-600 mb-4">点击下方的阶段条形图，可以查看该阶段的具体任务列表。</p>
+                    <div class="chart-container">
+                        <canvas id="ganttChart"></canvas>
+                    </div>
+                </div>
             </div>
-        </section>
 
-        <section id="skills">
-            <h2 class="section-title">核心技能</h2>
-            <div class="max-w-4xl mx-auto">
-                <p class="text-center text-gray-600 mb-12 text-lg">以下是我在多年产品管理与领导实践中积累的核心能力，它们帮助我驱动产品成功并赋能团队成长。</p>
-                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <div class="card">
-                        <h3 class="text-xl font-semibold mb-3 accent-color">战略产品管理</h3>
-                        <p class="text-gray-600">精通产品愿景定义、路线图规划与执行，驱动产品组合策略，确保产品与企业长期战略高度契合。</p>
+            <div id="roles-content" class="hidden">
+                 <div class="content-card p-4 sm:p-6">
+                    <h2 class="text-xl font-semibold mb-1">团队职责分工</h2>
+                    <p class="text-gray-600 mb-4">点击下方的角色卡片，可以查看该角色的所有相关任务。</p>
+                    <div id="role-cards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <!-- Role cards will be inserted here by JS -->
                     </div>
-                    <div class="card">
-                        <h3 class="text-xl font-semibold mb-3 accent-color">领导与团队赋能</h3>
-                        <p class="text-gray-600">具备卓越的团队领导与人才培养能力，擅长搭建、管理并赋能高效产品团队，促进团队成员专业成长与协作效率。</p>
-                    </div>
-                    <div class="card">
-                        <h3 class="text-xl font-semibold mb-3 accent-color">市场与用户洞察</h3>
-                        <p class="text-gray-600">运用高级市场调研、竞品分析与用户行为数据，识别市场空白与增长机遇，指导产品创新与迭代方向。</p>
-                    </div>
-                    <div class="card">
-                        <h3 class="text-xl font-semibold mb-3 accent-color">业务增长与变现</h3>
-                        <p class="text-gray-600">专注于通过产品创新驱动用户增长、营收提升与市场份额扩张，具备深厚的商业模式理解与变现策略制定能力。</p>
-                    </div>
-                    <div class="card">
-                        <h3 class="text-xl font-semibold mb-3 accent-color">跨职能协作与沟通</h3>
-                        <p class="text-gray-600">构建并维护与研发、设计、运营、销售等跨职能部门的紧密合作关系，高效协调资源，确保产品交付与市场成功。</p>
-                    </div>
-                    <div class="card">
-                        <h3 class="text-xl font-semibold mb-3 accent-color">技术理解与应用</h3>
-                        <p class="text-gray-600">具备CSS, HTML开发经验, Photoshop图像处理和JavaScript编程操作, 有效桥接业务与技术团队, 指导技术选型与架构决策。</p>
-                    </div>
-                    </div>
+                </div>
             </div>
-        </section>
 
-        <section id="experience">
-            <h2 class="section-title">职业经历</h2>
-            <div class="max-w-3xl mx-auto">
-                <p class="text-center text-gray-600 mb-12 text-lg">在我的职业生涯中，我有幸在多家优秀企业担任关键产品角色，领导并参与了众多富有挑战性的项目，积累了丰富的实战经验。</p>
-                <div class="space-y-8">
-                    <div class="timeline-item card">
-                        <div class="timeline-dot" style="--delay: 0s;"></div>
-                        <h3 class="text-xl font-semibold mb-1 accent-color">某集团 | 产品主管</h3>
-                        <p class="text-sm text-gray-500 mb-2">2022 年 2 月 - 2025 年 1 月 (2年 11个月)</p>
-                        <ul class="list-disc list-inside text-gray-700 space-y-1">
-                            <li>战略性主导并成功发布SAAS包网、色站、微投等3款核心产品从0到1的战略规划与落地实施，实现市场空白填充与业务快速增长。</li>
-                            <li>深度挖掘跨部门业务需求，系统化梳理并撰写详尽的产品设计文档，确保开发团队高效精准执行，加速产品上市周期。</li>
-                        </ul>
-                        <span class="details-toggle" onclick="toggleDetails(this)">显示更多</span>
-                        <div class="details-content">
-                            <ul class="list-disc list-inside text-gray-700 space-y-1">
-                                <li>统筹管理项目团队日常工作，优化内部资源配置，保障多个复杂项目按时高质量交付，提升项目成功率。</li>
-                                <li>紧密协作高层领导，确保产品战略与公司整体业务目标高度一致，为公司带来可持续竞争优势。</li>
+            <div id="challenges-content" class="hidden">
+                <div class="content-card p-4 sm:p-6">
+                    <h2 class="text-xl font-semibold mb-4">潜在挑战与解决方案</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <h3 class="font-semibold text-lg">1. 时间紧迫，任务量大</h3>
+                            <ul class="list-disc list-inside text-gray-600 mt-1">
+                                <li>分批次上线，不求一次性全部完成。</li>
+                                <li>利用电商平台的批量上传工具提升效率。</li>
+                                <li>评估是否需要短期雇佣兼职或外包基础工作。</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-lg">2. 商品信息不完整或不准确</h3>
+                            <ul class="list-disc list-inside text-gray-600 mt-1">
+                                <li>与供货商沟通，建立标准化的数据模板。</li>
+                                <li>指定专人负责信息收集与核对。</li>
+                                <li>进行交叉检查，减少错误。</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-lg">3. 图片设计瓶颈</h3>
+                            <ul class="list-disc list-inside text-gray-600 mt-1">
+                                <li>设计师提前准备通用的设计模板。</li>
+                                <li>在品牌规范内尽可能复用设计元素。</li>
+                                <li>考虑与专业图片处理服务商合作。</li>
+                            </ul>
+                        </div>
+                         <div>
+                            <h3 class="font-semibold text-lg">4. 多平台多店铺管理复杂</h3>
+                            <ul class="list-disc list-inside text-gray-600 mt-1">
+                                <li>考虑使用ERP或SaaS系统进行统一管理。</li>
+                                <li>制定详细的SOP（标准操作流程）。</li>
+                                <li>确保各平台信息和库存定期同步。</li>
                             </ul>
                         </div>
                     </div>
-                    <div class="timeline-item card">
-                        <div class="timeline-dot" style="--delay: 0.1s;"></div>
-                        <h3 class="text-xl font-semibold mb-1 accent-color">Ly集团 | 产品主管 (远程)</h3>
-                        <p class="text-sm text-gray-500 mb-2">2023 年 2 月 - 2024 年 8 月 (1年 7个月)</p>
-                        <ul class="list-disc list-inside text-gray-700 space-y-1">
-                            <li>持续迭代商户端功能，显著提升商户运营效率，优化用户体验，增强平台粘性。</li>
-                             <li>负责总控端产品的功能升级和流程优化，有效提升系统整体效能与管理效率。</li>
-                        </ul>
-                        <span class="details-toggle" onclick="toggleDetails(this)">显示更多</span>
-                        <div class="details-content">
-                            <ul class="list-disc list-inside text-gray-700 space-y-1">
-                               <li>构建高效的跨部门沟通机制，精准捕捉业务需求，驱动产品功能设计与文档撰写，确保产品与市场需求高度匹配。</li>
-                               <li>高效管理远程产品团队，协调资源，确保关键产品迭代如期完成并达到预期业务目标。</li>
-                            </ul>
-                        </div>
-                    </div>
-                     <div class="timeline-item card">
-                        <div class="timeline-dot" style="--delay: 0.2s;"></div>
-                        <h3 class="text-xl font-semibold mb-1 accent-color">Yb集团 | 产品专家</h3>
-                        <p class="text-sm text-gray-500 mb-2">2020 年 11 月 - 2022 年 10 月 (1年 11个月) | 柬埔寨</p>
-                        <ul class="list-disc list-inside text-gray-700 space-y-1">
-                            <li>全面负责体育项目代理系统、白马会微投项目及在线客服系统的产品迭代管理，驱动产品持续优化与市场适应性。</li>
-                            <li>主导产品需求的收集、整理与功能设计，并撰写详细设计文档，指导开发方向，确保产品质量。</li>
-                            <li>协助领导完成产品相关工作，并高效协调部门日常管理及功能协作，提升团队整体效率。</li>
-                        </ul>
-                    </div>
-                    <div class="timeline-item card">
-                        <div class="timeline-dot" style="--delay: 0.3s;"></div>
-                        <h3 class="text-xl font-semibold mb-1 accent-color">金星集团 | 产品专家</h3>
-                        <p class="text-sm text-gray-500 mb-2">2020 年 7 月 - 2020 年 11 月 (4个月) | 柬埔寨</p>
-                         <ul class="list-disc list-inside text-gray-700 space-y-1">
-                            <li>负责国际化综合游戏项目的版本生命周期管理，确保产品顺利上线及持续迭代，满足全球用户需求。</li>
-                            <li>执行产品需求收集、功能设计及设计文档撰写，保障产品高质量交付。</li>
-                            <li>管理部门日常运营与功能协调，并指导新人入职培训、辅导及培养，赋能团队成长与能力提升。</li>
-                        </ul>
-                    </div>
-                    <div class="timeline-item card">
-                        <div class="timeline-dot" style="--delay: 0.4s;"></div>
-                        <h3 class="text-xl font-semibold mb-1 accent-color">皇家集团 | 产品主管</h3>
-                        <p class="text-sm text-gray-500 mb-2">2018 年 12 月 - 2020 年 3 月 (1年 3个月) | 菲律宾</p>
-                        <ul class="list-disc list-inside text-gray-700 space-y-1">
-                            <li>驱动产品需求规划与实施，利用数据分析、用户访谈和市场调研持续优化产品功能与用户体验，提升用户满意度。</li>
-                            <li>负责彩票包网项目的产品迭代与功能拓展，扩大市场份额。</li>
-                            <li>构建新人培训与辅导体系，提升团队成员专业能力与项目质量，为团队输送核心人才。</li>
-                        </ul>
-                    </div>
-                     <div class="timeline-item card">
-                        <div class="timeline-dot" style="--delay: 0.5s;"></div>
-                        <h3 class="text-xl font-semibold mb-1 accent-color">乐盈集团 | 产品主管</h3>
-                        <p class="text-sm text-gray-500 mb-2">2018 年 6 月 - 2018 年 12 月 (6个月) | 菲律宾</p>
-                        <ul class="list-disc list-inside text-gray-700 space-y-1">
-                           <li>实施产品需求规划与落地，应用数据分析、用户访谈和需求调研持续发现并解决产品问题，优化产品性能。</li>
-                           <li>主导棋牌包网项目的产品迭代与市场适应性调整，确保产品竞争力。</li>
-                           <li>负责新人入职培训、辅导及培养，促进团队高效成长与产品迭代成功。</li>
-                        </ul>
-                    </div>
-                     <div class="timeline-item card">
-                        <div class="timeline-dot" style="--delay: 0.6s;"></div>
-                        <h3 class="text-xl font-semibold mb-1 accent-color">深圳某公司 | 产品专员</h3>
-                        <p class="text-sm text-gray-500 mb-2">2017 年 5 月 - 2018 年 5 月 (1年) | 深圳</p>
-                        <ul class="list-disc list-inside text-gray-700 space-y-1">
-                            <li>执行产品需求的收集、整理与功能设计，并撰写设计文档，支持产品开发流程。</li>
-                            <li>展现敏锐的市场洞察力，深入理解用户需求，为产品方向提供数据支持与建议。</li>
-                            <li>协助领导完成产品相关工作，并建立与相关部门的有效沟通与协调机制，确保信息流畅。</li>
-                        </ul>
-                    </div>
                 </div>
             </div>
-        </section>
-
-        <section id="projects">
-            <h2 class="section-title">关键项目经验</h2>
-            <div class="max-w-4xl mx-auto">
-                 <p class="text-center text-gray-600 mb-12 text-lg">在我的职业生涯中，我主导或深度参与了多个具有里程碑意义的产品项目，这些项目不仅取得了显著的业务成果，也锻炼了我在复杂环境下的产品领导能力。</p>
-                <div class="grid md:grid-cols-2 gap-8">
-                    <div class="card">
-                        <h3 class="text-xl font-semibold mb-2 accent-color">综合游戏包网 (Ly集团)</h3>
-                        <p class="text-gray-700">主导用户端、商户端、总控端架构与开发，优化Websocket通讯规则，提升数据传输效率；精进项目版本管理流程，确保发布周期缩短，加速产品迭代速度。</p>
-                    </div>
-                    <div class="card">
-                        <h3 class="text-xl font-semibold mb-2 accent-color">在线客服系统 (Yb集团)</h3>
-                        <p class="text-gray-700">从零构建完整的用户端、商户端、总控端，显著提升客服响应效率并完善关键功能，增强用户满意度与留存。</p>
-                    </div>
-                    <div class="card">
-                        <h3 class="text-xl font-semibold mb-2 accent-color">白马微投 (Yb集团)</h3>
-                        <p class="text-gray-700">成功迭代佣金结算系统及现场开奖系统，提升结算准确性与效率；优化用户体验，增加平台吸引力与用户转化。</p>
-                    </div>
-                    <div class="card">
-                        <h3 class="text-xl font-semibold mb-2 accent-color">体育项目 - 代理系统 (Yb集团)</h3>
-                        <p class="text-gray-700">全面迭代后台管理系统及多个终端，优化代理操作流程，提升代理商管理效率，助力业务规模扩张。</p>
-                    </div>
-                    <div class="card">
-                        <h3 class="text-xl font-semibold mb-2 accent-color">金贝包网 (某集团)</h3>
-                        <p class="text-gray-700">从零到一规划并落地标准化SaaS解决方案，成功赋能31个站点，驱动业务增长，确立市场领先地位。</p>
-                    </div>
-                    <div class="card">
-                        <h3 class="text-xl font-semibold mb-2 accent-color">微投 (某集团)</h3>
-                        <p class="text-gray-700">创新设计并实现用户通过聊天工具进行投注并实时反馈结果的功能，提升用户互动性与便捷性，开辟新的业务增长点。</p>
-                    </div>
-                     <div class="card md:col-span-2">
-                        <h3 class="text-xl font-semibold mb-2 accent-color">Xpron色站 (某集团)</h3>
-                        <p class="text-gray-700">从零到一构建集社区、AI、长短视频于一体的综合成人网站，定义产品愿景与核心功能，实现快速市场切入。</p>
-                    </div>
-                    </div>
-            </div>
-        </section>
-
-        <section id="education">
-            <h2 class="section-title">教育背景</h2>
-            <div class="max-w-xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="card">
-                    <h3 class="text-xl font-semibold mb-2 accent-color">本科 | 工商管理</h3>
-                    <p class="text-gray-700">厦门大学</p>
-                    <p class="text-sm text-gray-500">2020 年 9 月 - 2023 年 6 月</p>
-                </div>
-                <div class="card">
-                    <h3 class="text-xl font-semibold mb-2 accent-color">大专 | 工商企业管理</h3>
-                    <p class="text-gray-700">江西旅游商贸学院</p>
-                    <p class="text-sm text-gray-500">2015 年 3 月 - 2017 年 6 月</p>
+            
+            <div id="kpis-content" class="hidden">
+                <div class="content-card p-4 sm:p-6">
+                    <h2 class="text-xl font-semibold mb-4">关键绩效指标 (KPIs)</h2>
+                    <ul class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3 list-inside list-disc">
+                        <li>商品上架进度</li>
+                        <li>商品合格率（信息完整准确）</li>
+                        <li>订单处理效率</li>
+                        <li>客服响应速度与满意度</li>
+                        <li>库存周转率</li>
+                        <li>销售额与利润</li>
+                        <li>流量与转化率</li>
+                    </ul>
                 </div>
             </div>
+        </main>
+        
+        <section id="task-details-section" class="mt-8">
+             <div class="content-card p-4 sm:p-6">
+                <h2 id="task-title" class="text-xl font-semibold mb-4">任务详情: 阶段一：准备与规划</h2>
+                <div id="task-list" class="space-y-4">
+                    <!-- Tasks will be dynamically inserted here -->
+                </div>
+             </div>
         </section>
-    </main>
-
-    <footer class="bg-gray-100 border-t border-gray-200 mt-20">
-        <div class="container mx-auto px-6 py-8 text-center text-gray-600">
-            <p>&copy; <span id="currentYear"></span> Ethan. 保留所有权利。</p>
-            </div>
-    </footer>
+    </div>
 
     <script>
-        // Smooth scrolling for navigation links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const targetId = this.getAttribute('href');
-                const targetElement = document.querySelector(targetId);
-                if (targetElement) {
-                    targetElement.scrollIntoView({
-                        behavior: 'smooth'
-                    });
-                    // Close mobile nav if open
-                    const mobileNav = document.getElementById('mobile-nav');
-                    if (!mobileNav.classList.contains('hidden')) {
-                        mobileNav.classList.add('hidden');
+        const projectData = {
+            roles: [
+                { id: 'ceo', name: 'CEO', icon: '👑' },
+                { id: 'designer', name: '平面设计师', icon: '🎨' },
+                { id: 'ops', name: '运营专员', icon: '⚙️' }
+            ],
+            phases: [
+                { id: 'phase1', name: '阶段一：准备与规划', duration: 5, color: 'rgba(59, 130, 246, 0.7)' },
+                { id: 'phase2', name: '阶段二：商品信息录入与图片设计', duration: 30, color: 'rgba(16, 185, 129, 0.7)' },
+                { id: 'phase3', name: '阶段三：测试与优化', duration: 5, color: 'rgba(249, 115, 22, 0.7)' },
+                { id: 'phase4', name: '阶段四：日常运营与迭代', duration: 0, color: 'rgba(139, 92, 246, 0.7)' }
+            ],
+            tasks: [
+                { phaseId: 'phase1', roleId: 'ceo', text: '明确各店铺上线顺序和优先级。' },
+                { phaseId: 'phase1', roleId: 'ceo', text: '与团队沟通，制定详细项目计划和时间表。' },
+                { phaseId: 'phase1', roleId: 'ceo', text: '确认各电商平台账号注册和开店资质。' },
+                { phaseId: 'phase1', roleId: 'ops', text: '熟悉各电商平台规则、上架流程、后台操作。' },
+                { phaseId: 'phase1', roleId: 'ops', text: '收集整理1200个商品的原始数据。' },
+                { phaseId: 'phase1', roleId: 'ops', text: '建立商品信息批量导入模板。' },
+                { phaseId: 'phase1', roleId: 'ops', text: '对各品类进行竞品调研。' },
+                { phaseId: 'phase1', roleId: 'designer', text: '制定店铺视觉风格规范、图片尺寸要求等。' },
+                { phaseId: 'phase1', roleId: 'designer', text: '准备不同类型商品的详情页和主图设计模板。' },
+                
+                { phaseId: 'phase2', roleId: 'designer', text: '设计制作1200个商品的全部主图和详情页图片。' },
+                { phaseId: 'phase2', roleId: 'designer', text: '根据运营反馈，快速调整图片。' },
+                { phaseId: 'phase2', roleId: 'ops', text: '录入1200个商品的标题、卖点、参数、价格等信息。' },
+                { phaseId: 'phase2', roleId: 'ops', text: '设置4000+ SKU的规格、库存、编码。' },
+                { phaseId: 'phase2', roleId: 'ops', text: '对商品进行精准分类和打标签。' },
+                { phaseId: 'phase2', roleId: 'ops', text: '按批次在各平台上架商品。' },
+
+                { phaseId: 'phase3', roleId: 'ceo', text: '审批并授权商品正式上线。' },
+                { phaseId: 'phase3', roleId: 'ops', text: '全面自检所有上架商品的标题、价格、库存、图片等。' },
+                { phaseId: 'phase3', roleId: 'ops', text: '模拟买家进行下单、支付、退款等全链路测试。' },
+                { phaseId: 'phase3', roleId: 'ops', text: '对商品标题、关键词进行基础SEO优化。' },
+                { phaseId: 'phase3', roleId: 'designer', text: '根据测试反馈，最终优化调整图片。' },
+
+                { phaseId: 'phase4', roleId: 'ops', text: '每日处理订单，跟踪物流状态。' },
+                { phaseId: 'phase4', roleId: 'ops', text: '及时响应客户咨询，处理售后问题。' },
+                { phaseId: 'phase4', roleId: 'ops', text: '定期盘点库存，与供应链对接。' },
+                { phaseId: 'phase4', roleId: 'ops', text: '定期分析销售数据，形成报告。' },
+                { phaseId: 'phase4', roleId: 'ceo', text: '根据数据报告进行战略调整。' },
+                { phaseId: 'phase4', roleId: 'designer', text: '根据营销活动需求，制作海报、专题页等。' },
+            ]
+        };
+
+        let ganttChart;
+        let selectedRoleId = null;
+
+        const taskTitleEl = document.getElementById('task-title');
+        const taskListEl = document.getElementById('task-list');
+
+        function getRoleById(roleId) {
+            return projectData.roles.find(r => r.id === roleId);
+        }
+
+        function renderTasks(tasksToRender, title) {
+            taskTitleEl.textContent = title;
+            taskListEl.innerHTML = '';
+            if (tasksToRender.length === 0) {
+                 taskListEl.innerHTML = `<p class="text-gray-500">没有找到相关任务。</p>`;
+                 return;
+            }
+            const tasksByRole = tasksToRender.reduce((acc, task) => {
+                (acc[task.roleId] = acc[task.roleId] || []).push(task);
+                return acc;
+            }, {});
+
+            Object.keys(tasksByRole).forEach(roleId => {
+                const role = getRoleById(roleId);
+                const roleTasks = tasksByRole[roleId];
+                
+                const roleContainer = document.createElement('div');
+                roleContainer.innerHTML = `
+                    <h3 class="font-semibold text-md mb-2 flex items-center">
+                        <span class="mr-2 text-xl">${role.icon}</span>
+                        <span>${role.name}</span>
+                    </h3>
+                    <ul class="list-disc list-inside space-y-1 pl-4 text-gray-700">
+                        ${roleTasks.map(task => `<li>${task.text}</li>`).join('')}
+                    </ul>
+                `;
+                taskListEl.appendChild(roleContainer);
+            });
+        }
+
+        function renderTasksByPhase(phaseId) {
+            selectedRoleId = null;
+            updateRoleCardSelection();
+            const phase = projectData.phases.find(p => p.id === phaseId);
+            const tasks = projectData.tasks.filter(t => t.phaseId === phaseId);
+            renderTasks(tasks, `任务详情: ${phase.name}`);
+        }
+        
+        function renderTasksByRole(roleId) {
+            selectedRoleId = roleId;
+            updateRoleCardSelection();
+            const role = getRoleById(roleId);
+            const tasks = projectData.tasks.filter(t => t.roleId === roleId);
+            renderTasks(tasks, `任务详情: ${role.name}的所有任务`);
+        }
+
+        function createGanttChart() {
+            const ctx = document.getElementById('ganttChart').getContext('2d');
+            const data = {
+                labels: projectData.phases.filter(p => p.duration > 0).map(p => p.name),
+                datasets: [{
+                    label: '预估工作日',
+                    data: projectData.phases.filter(p => p.duration > 0).map(p => p.duration),
+                    backgroundColor: projectData.phases.filter(p => p.duration > 0).map(p => p.color),
+                    borderColor: projectData.phases.filter(p => p.duration > 0).map(p => p.color.replace('0.7', '1')),
+                    borderWidth: 1,
+                    barPercentage: 0.6,
+                }]
+            };
+
+            ganttChart = new Chart(ctx, {
+                type: 'bar',
+                data: data,
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.x !== null) {
+                                        label += context.parsed.x + '天';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '预估工作日 (天)'
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                callback: function(value, index, values) {
+                                    const label = this.getLabelForValue(value);
+                                    return label.length > 16 ? label.substring(0, 16) + '...' : label;
+                                }
+                            }
+                        }
+                    },
+                    onClick: (event, elements) => {
+                        if (elements.length > 0) {
+                            const phaseIndex = elements[0].index;
+                            const phaseId = projectData.phases.filter(p => p.duration > 0)[phaseIndex].id;
+                            renderTasksByPhase(phaseId);
+                        }
                     }
                 }
-            });
-        });
-
-        // Mobile navigation toggle
-        const navToggle = document.getElementById('nav-toggle');
-        const mobileNav = document.getElementById('mobile-nav');
-        if (navToggle && mobileNav) {
-            navToggle.addEventListener('click', function() {
-                mobileNav.classList.toggle('hidden');
             });
         }
         
-        // Details toggle for experience/projects
-        function toggleDetails(element) {
-            const detailsContent = element.nextElementSibling;
-            if (detailsContent && detailsContent.classList.contains('details-content')) {
-                if (detailsContent.classList.contains('expanded')) {
-                    detailsContent.classList.remove('expanded');
-                    detailsContent.style.maxHeight = '0';
-                    element.textContent = '显示更多';
-                } else {
-                    detailsContent.classList.add('expanded');
-                    detailsContent.style.maxHeight = detailsContent.scrollHeight + 'px'; // Set max-height to actual scrollHeight
-                    element.textContent = '收起详情';
-                }
-            }
+        function renderRoleCards() {
+            const container = document.getElementById('role-cards');
+            projectData.roles.forEach(role => {
+                const card = document.createElement('div');
+                card.className = 'role-card content-card p-4 text-center hover:shadow-md';
+                card.dataset.roleId = role.id;
+                card.innerHTML = `
+                    <p class="text-4xl mb-2">${role.icon}</p>
+                    <p class="font-semibold">${role.name}</p>
+                `;
+                card.addEventListener('click', () => renderTasksByRole(role.id));
+                container.appendChild(card);
+            });
         }
-
-        // Set current year in footer
-        document.getElementById('currentYear').textContent = new Date().getFullYear();
-
-        // Intersection Observer for scroll animations
-        const observerOptions = {
-            root: null,
-            rootMargin: '0px',
-            threshold: 0.2 // Trigger when 20% of the element is visible
-        };
-
-        const observer = new IntersectionObserver((entries, observer) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    // For section titles
-                    if (entry.target.classList.contains('section-title')) {
-                        entry.target.classList.add('animate-in');
-                    }
-                    // For cards
-                    if (entry.target.classList.contains('card')) {
-                        entry.target.classList.add('animate-in');
-                    }
-                    // For timeline items
-                    if (entry.target.classList.contains('timeline-item')) {
-                        entry.target.classList.add('animate-in');
-                    }
-                    // For timeline dots (already animated by CSS, but ensure visibility)
-                    if (entry.target.classList.contains('timeline-dot')) {
-                        // No specific JS class needed, CSS animation handles it
-                    }
-                    observer.unobserve(entry.target); // Stop observing once animated
+        
+        function updateRoleCardSelection() {
+            document.querySelectorAll('.role-card').forEach(card => {
+                if(card.dataset.roleId === selectedRoleId) {
+                    card.classList.add('selected');
+                } else {
+                    card.classList.remove('selected');
                 }
             });
-        }, observerOptions);
+        }
 
-        // Observe section titles
-        document.querySelectorAll('.section-title').forEach(title => {
-            observer.observe(title);
-        });
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabs = document.getElementById('tabs');
+            const tabContent = document.getElementById('tab-content').children;
+            const taskDetailsSection = document.getElementById('task-details-section');
 
-        // Observe cards (including those inside timeline-item)
-        document.querySelectorAll('section:not(#experience) .card, #experience .timeline-item .card').forEach(card => {
-            observer.observe(card);
-        });
+            tabs.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetTab = e.target.dataset.tab;
+                if (!targetTab) return;
 
-        // Observe timeline items directly for their animation
-        document.querySelectorAll('.timeline-item').forEach(item => {
-            observer.observe(item);
-        });
+                for (let i = 0; i < tabs.children.length; i++) {
+                    const tabLink = tabs.children[i];
+                    tabLink.classList.remove('tab-active');
+                    tabLink.classList.add('tab-inactive');
+                }
+                e.target.classList.add('tab-active');
+                e.target.classList.remove('tab-inactive');
 
-        // Set animation delays for timeline dots
-        document.querySelectorAll('.timeline-dot').forEach((dot, index) => {
-            dot.style.setProperty('--delay', `${index * 0.1}s`);
-        });
+                for (let i = 0; i < tabContent.length; i++) {
+                    tabContent[i].classList.add('hidden');
+                }
+                
+                document.getElementById(`${targetTab}-content`).classList.remove('hidden');
 
-        // Add staggered animation delay for cards in skills, projects, and education sections
-        document.querySelectorAll('#skills .card, #projects .card, #education .card').forEach((card, index) => {
-            card.style.transitionDelay = `${index * 0.1}s`;
+                if (targetTab === 'timeline' || targetTab === 'roles') {
+                    taskDetailsSection.classList.remove('hidden');
+                } else {
+                    taskDetailsSection.classList.add('hidden');
+                }
+                
+                if(targetTab === 'timeline'){
+                    renderTasksByPhase('phase1');
+                } else if(targetTab === 'roles') {
+                     renderTasksByRole('ceo');
+                }
+
+            });
+
+            createGanttChart();
+            renderRoleCards();
+            renderTasksByPhase('phase1');
         });
     </script>
 </body>
